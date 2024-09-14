@@ -1,0 +1,32 @@
+name: Build and Push to BrowserFS-builds
+
+on:
+  push:
+    branches:
+      - v1.x
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - id: commit
+        uses: prompt/actions-commit-hash@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v4
+      - name: Install dependencies and build
+        run: |
+          pnpm install
+          pnpm dist
+      - name: Clone BrowserFS-builds repository
+        run: |
+          git clone https://github.com/LosersUnited/BrowserFS-builds.git
+          mv dist BrowserFS-builds/dist
+      - uses: EndBug/add-and-commit@v9
+        with:
+          cwd: './BrowserFS-builds'
+          default_author: github_actions
+          message: 'Automatic build based on ${{ steps.commit.outputs.hash }}'
