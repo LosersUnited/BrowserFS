@@ -164,7 +164,7 @@ class RealFSClient {
   public readdir(p: string, cb: (error: Error | null, contents?: string[]) => void): void {
     /*
         const cacheInfo = this.getCachedDirInfo(p);
-    
+
         this._wrap((interceptCb) => {
           if (cacheInfo !== null && cacheInfo.contents) {
             this._client.readdir(p, {
@@ -704,22 +704,22 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
         if (flags.isReadable()) {
           cb(this.convert(error.message, path));
         } else {
-          // switch (error.status) {
-          //   // If it's being opened for writing or appending, create it so that
-          //   // it can be written to
-          //   case Dropbox.ApiError.NOT_FOUND:
-          //     const ab = new ArrayBuffer(0);
-          //     return this._writeFileStrict(path, ab, (error2: ApiError, stat?: Dropbox.File.Stat) => {
-          //       if (error2) {
-          //         cb(error2);
-          //       } else {
-          //         const file = this._makeFile(path, flags, stat!, arrayBuffer2Buffer(ab));
-          //         cb(null, file);
-          //       }
-          //     });
-          //   default:
+          switch (error.message) {
+            // If it's being opened for writing or appending, create it so that
+            // it can be written to
+            case "GENERAL_FAILURE":
+              const ab = new ArrayBuffer(0);
+              return this._writeFileStrict(path, ab, (error2: ApiError, stat?: RealFS_Stat) => {
+                if (error2) {
+                  cb(error2);
+                } else {
+                  const file = this._makeFile(path, flags, stat!, arrayBuffer2Buffer(ab));
+                  cb(null, file);
+                }
+              });
+            default:
           return cb(this.convert(error.message, path));
-          // }
+          }
         }
       } else {
         // No error
