@@ -7,6 +7,9 @@ import { File } from '../core/file';
 import { each as asyncEach } from 'async';
 import * as path from 'path';
 import { arrayBuffer2Buffer, buffer2ArrayBuffer, emptyBuffer, deprecationMessage } from '../core/util';
+/* tslint:disable:member-ordering */
+/* tslint:disable:one-line */
+/* tslint:disable:triple-equals */
 
 /**
  * @hidden
@@ -110,7 +113,7 @@ class RealFSClient {
   private _cache: { [path: string]: ICachedPathInfo } = {};
   private _client: Dropbox.Client;
 
-  private _apiUrl: string
+  private _apiUrl: string;
   constructor(apiUrl: string) {
     // this._client = client;
     this._apiUrl = apiUrl;
@@ -131,12 +134,12 @@ class RealFSClient {
         appendPath(filePath);
         break;
       case "list":
-        constructedFullApiUrl.push("directory")
+        constructedFullApiUrl.push("directory");
         targetMethod = "GET";
         appendPath(filePath);
         break;
       case "stat":
-        constructedFullApiUrl.push("stat")
+        constructedFullApiUrl.push("stat");
         targetMethod = "GET";
         appendPath(filePath);
         break;
@@ -419,7 +422,7 @@ class RealFSClient {
    */
   private _wrap(performOp: (interceptCb: (error: Dropbox.ApiError) => void) => void, cb: Function): void {
     let numRun = 0;
-    const interceptCb = function (error: Dropbox.ApiError): void {
+    const interceptCb = function(error: Dropbox.ApiError): void {
       // Timeout duration, in seconds.
       const timeoutDuration: number = 2;
       if (error && 3 > (++numRun)) {
@@ -479,7 +482,7 @@ class RealFSClient {
     // Ignore stat objects w/o a contentHash defined; those actually exist!!!
     // (Example: readdir returns an array of stat objs; stat objs for dirs in that context have no contentHash)
     if (stat.contentHash !== null && (cachedInfo === undefined || cachedInfo.stat.contentHash !== stat.contentHash)) {
-      this.putCachedInfo(p, <ICachedDirInfo>{
+      this.putCachedInfo(p, <ICachedDirInfo> {
         stat: stat,
         contents: contents
       });
@@ -491,7 +494,7 @@ class RealFSClient {
     // Dropbox uses the *versionTag* property for files.
     // Ignore stat objects w/o a versionTag defined.
     if (stat.versionTag !== null && (cachedInfo === undefined || cachedInfo.stat.versionTag !== stat.versionTag)) {
-      this.putCachedInfo(p, <ICachedFileInfo>{
+      this.putCachedInfo(p, <ICachedFileInfo> {
         stat: stat,
         contents: contents
       });
@@ -642,7 +645,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
           }
         };
         // XXX: <any> typing is to get around overly-restrictive ErrorCallback typing.
-        asyncEach(files!, <any>deleteFile, <any>finished);
+        asyncEach(files!, <any> deleteFile, <any> finished);
       }
     });
   }
@@ -687,11 +690,11 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
       } else {
         const stats = new Stats(
           this._statType(stat!),
-          parseInt(stat!.size),
-          parseInt(stat!.mode),
-          new Date(parseInt(stat!.atime) * 1000),
-          new Date(parseInt(stat!.atime) * 1000),
-          new Date(parseInt(stat!.ctime) * 1000),
+          parseInt(stat!.size, 10),
+          parseInt(stat!.mode, 10),
+          new Date(parseInt(stat!.atime, 10) * 1000),
+          new Date(parseInt(stat!.atime, 10) * 1000),
+          new Date(parseInt(stat!.ctime, 10) * 1000),
         );
         return cb(null, stats);
       }
@@ -762,7 +765,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
    * Returns a BrowserFS object representing the type of a Dropbox.js stat object
    */
   public _statType(stat: RealFsStat): FileType {
-    return parseInt(stat.itemType);
+    return parseInt(stat.itemType, 10);
   }
 
   /**
@@ -773,7 +776,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
   public _makeFile(path: string, flag: FileFlag, stat: RealFsStat, buffer: Buffer): RealFile {
     // const type = /*this._statType(stat); TODO*/ FileType.FILE;
     const type = this._statType(stat);
-    const stats = new Stats(type, parseInt(stat.size));
+    const stats = new Stats(type, parseInt(stat.size, 10));
     return new RealFile(this, path, flag, stats, buffer);
   }
 
