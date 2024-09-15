@@ -69,19 +69,18 @@ interface ICachedDirInfo extends ICachedPathInfo {
 const parseOptions = (input: string) => {
   const full: { [key: string]: any } = {};
   const inputSplit = input.split("\n");
-  for (let i = 0; i < inputSplit.length; i++) {
-    const element = inputSplit[i];
+  for (const element of inputSplit) {
     if (element.includes("=\"")) {
       const optVal = element.slice(element.indexOf("=") + 1).slice(1).slice(0, -1);
       const booleanValue = (optVal === "true" || optVal === "false") ? optVal === "true" : undefined;
       const optKey = element.split("=")[0];
-      full[optKey] = (booleanValue == undefined ? optVal : booleanValue);
+      full[optKey] = (booleanValue === undefined ? optVal : booleanValue);
     }
   }
   return full;
 };
 
-export type RealFS_Stat = { itemType: string, ctime: string, mode: string, size: string, mtime: string, atime: string };
+export interface RealFsStat { itemType: string; ctime: string; mode: string; size: string; mtime: string; atime: string; };
 
 /**
  * @hidden
@@ -149,14 +148,14 @@ class RealFSClient {
       default:
         break;
     }
-    const req = fetch(constructedFullApiUrl.join("/") + (search.length > 0 ? `?${search.map(x => `${x.key}=${x.value}`).join("&")}` : ""), {
+    const req = fetch(constructedFullApiUrl.join("/") + (search.length > 0 ? `?${search.map((x) => `${x.key}=${x.value}`).join("&")}` : ""), {
       method: targetMethod,
       body: postData,
     });
-    req.catch(x => {
+    req.catch((x) => {
       callback(x);
     });
-    req.then(x => {
+    req.then((x) => {
       callback(null, x);
     });
   }
@@ -194,8 +193,9 @@ class RealFSClient {
         cb(err);
       }
       else {
-        if (contents == undefined)
+        if (contents == undefined) {
           return;
+        }
         if (contents.status != 200) {
           const convertErrorMsg = (errorMsg: keyof typeof Errors) => new Error(errorMsg);
           switch (contents.statusText) {
@@ -215,8 +215,8 @@ class RealFSClient {
         }
         else {
           // cb(null, (await contents.text()).split("\n"));
-          contents.text().then(x2 => {
-            cb(null, x2.split("\n").filter(x => x.length > 0));
+          contents.text().then((x2) => {
+            cb(null, x2.split("\n").filter((x) => x.length > 0));
           });
         }
       }
@@ -248,7 +248,7 @@ class RealFSClient {
     cb(new Error("Unimplemented"));
   }
 
-  public stat(p: string, cb: (error: Error | null, stat?: RealFS_Stat) => void): void {
+  public stat(p: string, cb: (error: Error | null, stat?: RealFsStat) => void): void {
     // this._wrap((interceptCb) => {
     //   this._client.stat(p, interceptCb);
     // }, (err: Dropbox.ApiError, stat: Dropbox.File.Stat) => {
@@ -263,8 +263,9 @@ class RealFSClient {
         cb(err);
       }
       else {
-        if (contents == undefined)
+        if (contents == undefined) {
           return;
+        }
         if (contents.status != 200) {
           const convertErrorMsg = (errorMsg: keyof typeof Errors) => new Error(errorMsg);
           switch (contents.statusText) {
@@ -280,15 +281,15 @@ class RealFSClient {
           return;
         }
         else {
-          contents.text().then(x2 => {
-            cb(null, parseOptions(x2) as RealFS_Stat);
+          contents.text().then((x2) => {
+            cb(null, parseOptions(x2) as RealFsStat);
           });
         }
       }
     });
   }
 
-  public readFile(p: string, cb: (error: Error | null, file?: ArrayBuffer, stat?: RealFS_Stat) => void): void {
+  public readFile(p: string, cb: (error: Error | null, file?: ArrayBuffer, stat?: RealFsStat) => void): void {
     // const cacheInfo = this.getCachedFileInfo(p);
     // if (cacheInfo !== null && cacheInfo.contents !== null) {
     //   // Try to use cached info; issue a stat to see if contents are up-to-date.
@@ -319,8 +320,9 @@ class RealFSClient {
         cb(err);
       }
       else {
-        if (contents == undefined)
+        if (contents == undefined) {
           return;
+        }
         if (contents.status != 200) {
           const convertErrorMsg = (errorMsg: keyof typeof Errors) => new Error(errorMsg);
           switch (contents.statusText) {
@@ -336,7 +338,7 @@ class RealFSClient {
           return;
         }
         else {
-          contents.arrayBuffer().then(x2 => {
+          contents.arrayBuffer().then((x2) => {
             // cb(null, x2, );
             this.stat(p, (err, stat) => {
               cb(err, x2, stat);
@@ -347,7 +349,7 @@ class RealFSClient {
     });
   }
 
-  public writeFile(p: string, contents: ArrayBuffer, cb: (error: Error | null, stat?: RealFS_Stat) => void): void {
+  public writeFile(p: string, contents: ArrayBuffer, cb: (error: Error | null, stat?: RealFsStat) => void): void {
     // this._wrap((interceptCb) => {
     //   this._client.writeFile(p, contents, interceptCb);
     // }, (err: Dropbox.ApiError, stat: Dropbox.File.Stat) => {
@@ -362,8 +364,9 @@ class RealFSClient {
         cb(err);
       }
       else {
-        if (contents == undefined)
-          return;
+        if (contents == undefined) {
+            return;
+        }
         if (contents.status != 200) {
           const convertErrorMsg = (errorMsg: keyof typeof Errors) => new Error(errorMsg);
           switch (contents.statusText) {
@@ -709,7 +712,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
             // it can be written to
             case "GENERAL_FAILURE":
               const ab = new ArrayBuffer(0);
-              return this._writeFileStrict(path, ab, (error2: ApiError, stat?: RealFS_Stat) => {
+              return this._writeFileStrict(path, ab, (error2: ApiError, stat?: RealFsStat) => {
                 if (error2) {
                   cb(error2);
                 } else {
@@ -737,7 +740,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
     });
   }
 
-  public _writeFileStrict(p: string, data: ArrayBuffer, cb: BFSCallback<RealFS_Stat>): void {
+  public _writeFileStrict(p: string, data: ArrayBuffer, cb: BFSCallback<RealFsStat>): void {
     const parent = path.dirname(p);
     this.stat(parent, false, (error: ApiError, stat?: Stats): void => {
       if (error) {
@@ -758,7 +761,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
    * Private
    * Returns a BrowserFS object representing the type of a Dropbox.js stat object
    */
-  public _statType(stat: RealFS_Stat): FileType {
+  public _statType(stat: RealFsStat): FileType {
     return parseInt(stat.itemType);
   }
 
@@ -767,7 +770,7 @@ export default class RealFileSystem extends BaseFileSystem implements FileSystem
    * Returns a BrowserFS object representing a File, created from the data
    * returned by calls to the Dropbox API.
    */
-  public _makeFile(path: string, flag: FileFlag, stat: RealFS_Stat, buffer: Buffer): RealFile {
+  public _makeFile(path: string, flag: FileFlag, stat: RealFsStat, buffer: Buffer): RealFile {
     // const type = /*this._statType(stat); TODO*/ FileType.FILE;
     const type = this._statType(stat);
     const stats = new Stats(type, parseInt(stat.size));
