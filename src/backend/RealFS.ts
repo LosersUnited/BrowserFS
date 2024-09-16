@@ -149,7 +149,7 @@ class RealFSClient {
         appendPath(filePath);
         break;
       default:
-        break;
+        throw new Error("Unknown operation requested " + kind);
     }
     const req = fetch(constructedFullApiUrl.join("/") + (search.length > 0 ? `?${search.map((x) => `${x.key}=${x.value}`).join("&")}` : ""), {
       method: targetMethod,
