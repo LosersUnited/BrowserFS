@@ -20,19 +20,29 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
             version: 9
-      - name: Install dependencies and build
-        run: |
-          pnpm install
-          pnpm dist
       - name: Clone BrowserFS-builds repository
         uses: actions/checkout@v4
         with:
           path: ./BrowserFS-builds
           token: ${{ secrets.PAT }}
           repository: LosersUnited/BrowserFS-builds
-      - name: Move dist
+      - run: |
+          ls ./BrowserFS-builds/dist
+      - name: Move dist from builds
         run: |
+          mv ./BrowserFS-builds/dist ./dist
+      - run: |
+          ls ./dist
+      - name: Install dependencies and build
+        run: |
+          pnpm install
+          pnpm dist
+      - name: Move dist to builds
+        run: |
+          rm -rf ./BrowserFS-builds/dist
           mv ./dist ./BrowserFS-builds/dist
+      - run: |
+          ls ./BrowserFS-builds/dist
       # - uses: EndBug/add-and-commit@v9
       #   with:
       #     cwd: './BrowserFS-builds'
