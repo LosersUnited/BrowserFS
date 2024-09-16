@@ -36,7 +36,6 @@ jobs:
       - name: Install dependencies and build
         run: |
           pnpm install
-          pnpm dist
       - name: Move dist to builds
         run: |
           rm -rf ./BrowserFS-builds/dist
